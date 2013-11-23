@@ -1,3 +1,4 @@
 [submodule "ThirdParty/Sparkle"]
 	path = ThirdParty/Sparkle
 	url = https://github.com/pcbeard/Sparkle.git
+	branch = Xcode5
