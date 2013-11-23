@@ -198,7 +198,7 @@ static const NSTimeInterval kMinimumMessagesRefreshDelay = 0.10; // seconds
 {
     BOOL turnBitsOn;
 
-    switch ([sender state]) {
+    switch ([(NSButton *)sender state]) {
         case NSOnState:
         case NSMixedState:	// Changing from off to mixed state should be the same as changing to all-on
             turnBitsOn = YES;

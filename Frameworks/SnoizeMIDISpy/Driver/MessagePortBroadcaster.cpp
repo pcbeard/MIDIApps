@@ -163,7 +163,7 @@ void MessagePortBroadcaster::Broadcast(CFDataRef data, SInt32 channel)
     
     pthread_mutex_lock(&mListenerStructuresMutex);
 
-    listeners = (CFArrayRef)CFDictionaryGetValue(mListenerArraysByChannel, (void *)channel);
+    listeners = (CFArrayRef)CFDictionaryGetValue(mListenerArraysByChannel, (void *)(uintptr_t)channel);
     if (listeners) {
         listenerIndex = CFArrayGetCount(listeners);
     
@@ -252,8 +252,8 @@ void	MessagePortBroadcaster::AddListener(CFDataRef listenerIdentifierData)
         CFMessagePortSetInvalidationCallBack(remotePort, MessagePortWasInvalidated);
 
         pthread_mutex_lock(&mListenerStructuresMutex);
-        CFDictionarySetValue(mListenersByIdentifier, (void *)listenerIdentifier, (void *)remotePort);
-        CFDictionarySetValue(mIdentifiersByListener, (void *)remotePort, (void *)listenerIdentifier);
+        CFDictionarySetValue(mListenersByIdentifier, (void *)(uintptr_t)listenerIdentifier, (void *)(uintptr_t)remotePort);
+        CFDictionarySetValue(mIdentifiersByListener, (void *)(uintptr_t)remotePort, (void *)(uintptr_t)listenerIdentifier);
         pthread_mutex_unlock(&mListenerStructuresMutex);
 
         CFRelease(remotePort);
@@ -287,17 +287,17 @@ void	MessagePortBroadcaster::ChangeListenerChannelStatus(CFDataRef messageData, 
     identifier = *(UInt32 *)dataBytes;
     channel = *(SInt32 *)(dataBytes + sizeof(UInt32));
 
-    remotePort = (CFMessagePortRef)CFDictionaryGetValue(mListenersByIdentifier, (void *)identifier);
+    remotePort = (CFMessagePortRef)CFDictionaryGetValue(mListenersByIdentifier, (void *)(uintptr_t)identifier);
     if (!remotePort)
         return;
 
     pthread_mutex_lock(&mListenerStructuresMutex);
         
-    channelListeners = (CFMutableArrayRef)CFDictionaryGetValue(mListenerArraysByChannel, (void *)channel);
+    channelListeners = (CFMutableArrayRef)CFDictionaryGetValue(mListenerArraysByChannel, (void *)(uintptr_t)channel);
     if (!channelListeners && shouldAdd) {
         channelListeners = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
         if (channelListeners) {
-            CFDictionarySetValue(mListenerArraysByChannel, (void *)channel, channelListeners);
+            CFDictionarySetValue(mListenerArraysByChannel, (void *)(uintptr_t)channel, channelListeners);
             CFRelease(channelListeners);
         }
     }
@@ -342,8 +342,8 @@ void	MessagePortBroadcaster::RemoveListenerWithRemotePort(CFMessagePortRef remot
 #else
     identifier = (UInt32)ptrId;
 #endif
-    CFDictionaryRemoveValue(mListenersByIdentifier, (void *)identifier);
-    CFDictionaryRemoveValue(mIdentifiersByListener, (void *)remotePort);
+    CFDictionaryRemoveValue(mListenersByIdentifier, (void *)(uintptr_t)identifier);
+    CFDictionaryRemoveValue(mIdentifiersByListener, (void *)(uintptr_t)remotePort);
 
     // Also go through the listener array for each channel and remove remotePort from there too
     CFDictionaryApplyFunction(mListenerArraysByChannel, RemoveRemotePortFromChannelArray, remotePort);    
